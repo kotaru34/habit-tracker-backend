@@ -52,4 +52,53 @@ const createHabit = async (req, res) => {
     }
 };
 
-module.exports = { getHabits, createHabit };
+const updateHabit = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, category_id, frequency, reminder_time } = req.body;
+        
+        const timeValue = reminder_time && reminder_time.trim() !== "" ? reminder_time : null;
+        const freqData = frequency || { type: "daily" };
+
+        const query = `
+            UPDATE habits 
+            SET name = $1, description = $2, category_id = $3, frequency = $4, reminder_time = $5
+            WHERE id = $6 AND user_id = $7
+            RETURNING *
+        `;
+        
+        const result = await pool.query(query, [
+            name, description, category_id, freqData, timeValue, id, req.userId
+        ]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Habit not found or not authorized" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+const deleteHabit = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query(
+            'DELETE FROM habits WHERE id = $1 AND user_id = $2 RETURNING *',
+            [id, req.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Habit not found or not authorized" });
+        }
+
+        res.json({ message: "Habit deleted" });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+module.exports = { getHabits, createHabit, updateHabit, deleteHabit };

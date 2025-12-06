@@ -28,6 +28,33 @@ const createGoal = async (req, res) => {
     }
 };
 
+const updateGoal = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, deadline, status } = req.body;
+        
+        // can be empty, set to null
+        const deadlineVal = deadline && deadline.trim() !== "" ? deadline : null;
+
+        const result = await pool.query(
+            'UPDATE goals SET name = $1, description = $2, deadline = $3, status = $4 WHERE id = $5 AND user_id = $6 RETURNING *',
+            [name, description, deadlineVal, status || 'in_progress', id, req.userId]
+        );
+        
+        if (result.rows.length === 0) return res.status(404).json({ message: "Goal not found" });
+        res.json(result.rows[0]);
+    } catch (err) { console.error(err); res.status(500).send('Server Error'); }
+};
+
+const deleteGoal = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query('DELETE FROM goals WHERE id = $1 AND user_id = $2 RETURNING *', [id, req.userId]);
+        if (result.rows.length === 0) return res.status(404).json({ message: "Goal not found" });
+        res.json({ message: "Goal deleted" });
+    } catch (err) { console.error(err); res.status(500).send('Server Error'); }
+};
+
 const getGoalSteps = async (req, res) => {
     try {
         const { goalId } = req.params;
@@ -59,19 +86,31 @@ const addGoalStep = async (req, res) => {
     }
 };
 
-const toggleGoalStep = async (req, res) => {
+const updateGoalStep = async (req, res) => {
     try {
         const { stepId } = req.params;
-        const { is_completed } = req.body; 
+        const { description, is_completed } = req.body;
+
+        const current = await pool.query('SELECT * FROM goal_steps WHERE id = $1', [stepId]);
+        if (current.rows.length === 0) return res.status(404).json({ message: "Step not found" });
+
+        const newDesc = description !== undefined ? description : current.rows[0].description;
+        const newStatus = is_completed !== undefined ? is_completed : current.rows[0].is_completed;
+
         const result = await pool.query(
-            'UPDATE goal_steps SET is_completed = $1 WHERE id = $2 RETURNING *',
-            [is_completed, stepId]
+            'UPDATE goal_steps SET description = $1, is_completed = $2 WHERE id = $3 RETURNING *',
+            [newDesc, newStatus, stepId]
         );
         res.json(result.rows[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
+    } catch (err) { console.error(err); res.status(500).send('Server Error'); }
 };
 
-module.exports = { getGoals, createGoal, getGoalSteps, addGoalStep, toggleGoalStep };
+const deleteGoalStep = async (req, res) => {
+    try {
+        const { stepId } = req.params;
+        await pool.query('DELETE FROM goal_steps WHERE id = $1', [stepId]);
+        res.json({ message: "Step deleted" });
+    } catch (err) { console.error(err); res.status(500).send('Server Error'); }
+};
+
+module.exports = { getGoals, createGoal, updateGoal, deleteGoal, getGoalSteps, addGoalStep, updateGoalStep, deleteGoalStep };

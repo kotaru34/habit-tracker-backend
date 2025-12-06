@@ -16,6 +16,8 @@ router.get('/categories', categoryController.getCategories);
 // --- HABITS ---
 router.get('/habits', habitController.getHabits);
 router.post('/habits', habitController.createHabit);
+router.put('/habits/:id', habitController.updateHabit);
+router.delete('/habits/:id', habitController.deleteHabit);
 
 // --- CHECKINS ---
 router.get('/checkins', checkinController.getCheckIns);
@@ -24,10 +26,13 @@ router.post('/checkins', checkinController.createCheckIn);
 // --- GOALS ---
 router.get('/goals', goalController.getGoals);
 router.post('/goals', goalController.createGoal);
+router.put('/goals/:id', goalController.updateGoal);
+router.delete('/goals/:id', goalController.deleteGoal);
 
 // --- GOAL STEPS ---
-router.get('/goals/:goalId/steps', goalController.getGoalSteps); // get goal steps
-router.post('/goals/:goalId/steps', goalController.addGoalStep); // add a new step
-router.put('/goal-steps/:stepId', goalController.toggleGoalStep); // check a step as completed
+router.get('/goals/:goalId/steps', goalController.getGoalSteps);
+router.post('/goals/:goalId/steps', goalController.addGoalStep);
+router.put('/goal-steps/:stepId', goalController.updateGoalStep);
+router.delete('/goal-steps/:stepId', goalController.deleteGoalStep);
 
 module.exports = router;
