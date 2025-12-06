@@ -35,7 +35,7 @@ const getCheckIns = async (req, res) => {
 
         const formattedData = result.rows.map(row => ({
             habit_id: row.habit_id,
-            checkin_date: new Date(row.checkin_date).toISOString().split('T')[0]
+            checkin_date: row.checkin_date
         }));
 
         res.json(formattedData);
