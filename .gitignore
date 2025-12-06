@@ -1,0 +1,7 @@
+.env
+templates/
+node_modules/
+dist/
+.vscode/
+.DS_Store
+src/config/db
