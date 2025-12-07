@@ -5,10 +5,10 @@ const habitController = require('../controllers/habitController');
 const checkinController = require('../controllers/checkinController');
 const categoryController = require('../controllers/categoryController');
 const goalController = require('../controllers/goalController');
-const getUserId = require('../middleware/userMiddleware');
+const authMiddleware = require('../middleware/userMiddleware');
 
-// Middleware authentication (simulation) for all routes
-router.use(getUserId);
+// auth middleware to protect all /api routes
+router.use(authMiddleware);
 
 // --- CATEGORIES ---
 router.get('/categories', categoryController.getCategories);
